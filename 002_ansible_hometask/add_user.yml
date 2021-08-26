@@ -1,0 +1,29 @@
+---
+- name: Create New Users
+  hosts: nodes
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  gather_facts: true
+  vars_files:
+    - users_pass.yml
+    - usernames.yml
+  tasks:
+    - name: Create Users, Home Directory and set Passwords 
+      user:
+        name: "{{ item }}"
+        password: "{{ users_pass | password_hash('sha512') }}"
+        shell: /bin/bash
+        state: present
+        createhome: yes
+        home: "/home/{{ item }}"
+      with_items:
+        - "{{ names }}"
+      register: user_status
+ 
+    - name:
+      shell: chage -d 0 "{{ item }}"
+      with_items:
+        - "{{ names }}"
+      when: user_status.changed
