@@ -1,0 +1,46 @@
+---
+- hosts: nodes
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+
+  tasks:
+  - name: ensure httpd is at the latest version
+    yum: 
+      name: httpd
+      update_cache: yes
+      state: latest
+  - debug:
+      msg: 'Installing httpd'
+
+  - name: Create file on remote host
+    copy:
+      dest: '/var/www/html/index.html'
+      content: |
+        Welcome to My web server!
+    notify:
+      - restart httpd
+
+  - name: open 80 port
+    firewalld:
+      service: http
+      permanent: true
+      state: enabled
+    notify:
+      - restart httpd
+
+  - name: open 443 port
+    firewalld:
+      service: https
+      permanent: true
+      state: enabled
+    notify:
+      - restart httpd
+      
+  handlers:
+  - name: restart httpd
+    service:
+      name: httpd
+      state: restarted    
+...

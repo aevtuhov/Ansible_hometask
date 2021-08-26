@@ -1,0 +1,30 @@
+---
+- hosts: nodes
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+
+  tasks:
+  - name: remove httpd service
+    yum: 
+      name: httpd 
+      state: removed
+
+  - name: remove file from remote host
+    file:
+      path: /var/www/html/index.html
+      state: absent
+
+  - name: close 80 port
+    firewalld:
+      port: 80/tcp
+      permanent: true
+      state: disabled
+  
+  - name: close 443 port
+    firewalld:
+      port: 443/tcp
+      permanent: true
+      state: disabled  
+...
