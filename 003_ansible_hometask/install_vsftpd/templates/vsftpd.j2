@@ -1,0 +1,39 @@
+# Common FTP server Config
+
+connect_from_port_20=YES
+ftpd_banner=Welcome to test FTP service.
+listen=YES
+listen_ipv6=NO
+pam_service_name=vsftpd
+pasv_min_port=20000
+pasv_max_port=20010
+
+# Config anonymous upload to FTP
+
+anonymous_enable=YES
+no_anon_password=YES
+anon_root=/var/ftp/pub
+anon_umask=022
+write_enable=YES
+anon_upload_enable=YES
+anon_mkdir_write_enable=YES
+anon_other_write_enable=YES
+
+# Logging congif
+
+dirmessage_enable=YES
+xferlog_enable=YES
+xferlog_file=/var/log/xferlog
+xferlog_std_format=YES
+
+
+
+
+
+
+
+
+
+
+
+

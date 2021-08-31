@@ -1,0 +1,8 @@
+- hosts: nodes
+  remote_user: ansible
+  become: yes
+  become_method: sudo
+  become_user: root
+  
+  roles:
+    - install_vsftpd

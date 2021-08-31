@@ -1,0 +1,13 @@
+---
+# handlers file for vsftpd role
+
+- name: restart_firewalld
+  service:
+    name: firewalld
+    state: restarted
+    enabled: yes
+
+- name: restart_vsftpd
+  service: 
+    name: vsftpd
+    state: restarted            

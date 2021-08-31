@@ -1,0 +1,89 @@
+---
+# vsftpd installation
+
+- debug:
+    msg: 'Installing vsftpd'
+
+- name: Install vsftpd at the latest version
+  yum: 
+    name: vsftpd
+    update_cache: yes
+    state: latest
+  
+- name: Create a directory (/var/ftp/pub/) on remote host
+  file:
+    path: /var/ftp/pub/
+    state: directory
+    owner: ftp
+    group: ftp
+    mode: '0555'
+
+- name: Create a directory (/var/ftp/pub/upload) on remote host
+  file:
+    path: /var/ftp/pub/upload
+    state: directory
+    owner: ftp
+    group: ftp
+    mode: '0766'
+
+# SELinux configuration
+
+- name: Install  policycoreutils-python and libselinux-python
+  yum:
+    name:  "{{ item }}"
+    state: present 
+  with_items:
+    - policycoreutils-python-utils
+    - libselinux-python3
+
+- name: Allow vsftpd modify files in /var/ftp/pub
+  sefcontext:
+    target: '/var/ftp/pub(/.*)?'
+    setype: public_content_rw_t
+    state: present
+
+- name: Apply new SELinux file context to filesystem
+  command: restorecon -irv /var/ftp/pub
+
+- name: Set allow_ftpd_anon_write flag on and keep it persistent across reboots
+  seboolean:
+    name: allow_ftpd_anon_write 
+    state: yes
+    persistent: yes
+
+#vsftpd configuration and set /enable/restart
+- name: Config vsftpd/enable/restart
+  block:
+    - name: Add config for vsftpd
+      template:
+        src: templates/vsftpd.j2 
+        dest: /etc/vsftpd/vsftpd.conf 
+        owner: root
+        group: root
+      notify: 
+        - restart_vsftpd
+
+
+    - name: Enable and start vsftpd
+      service: 
+        name: vsftpd
+        state: started
+        enabled: yes
+
+    - name: Open FTP ports on remote host
+      firewalld:
+        port: "{{ item }}" 
+        permanent: yes
+        state: enabled
+      with_items:
+        - 21/tcp
+        - 21/udp
+        - 20/tcp
+        - 20/udp
+        - 20000-20010/tcp
+        - 20000-20010/udp
+      notify:
+        - restart_firewalld
+
+    
+...
